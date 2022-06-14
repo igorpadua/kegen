@@ -62,7 +62,6 @@ void MainWindow::on_btnRender_clicked()
     QString legenda = ui->lineLeg->text();
     QString nomeFinal = ui->lineSaida->text();
 
-
     if (video != "" && legenda != "")  {
 
         if (QString::compare("file://", video.left(6))) {
@@ -78,20 +77,19 @@ void MainWindow::on_btnRender_clicked()
             nomeFinal.insert(nomeFinal.lastIndexOf('/') + 1, "FINALIZADO_");
         }
 
-        QString programa = "ffmpeg";
-        QStringList arguments;
-
-
-        if (legenda.right(3) == "srt") {
+        if (legenda.right(4) == ".srt") {
             legenda.insert(0, "subtitles=");
-            arguments <<  "-i" << video << "-vf" << legenda << nomeFinal;
-        } else {
+        } else if (legenda.right(4) == ".ass") {
             legenda.insert(0, "ass=");
-            arguments << "-vaapi_device" << "/dev/dri/renderD128" <<  "-i" << video << "-vf" << legenda << "-vf" << "format=nv12,hwupload" << "-c:v" << "hevc_vaapi" << "-f" << "mp4" << "-rc_mode" << "1" << "-qp" << "25" << nomeFinal;
+        } else {
+            QMessageBox::warning(this, "Aviso", "Formato de legenda não suportado!");
+            return;
         }
 
-        qDebug() << legenda;
+        const QString programa = "ffmpeg";
+        const QStringList arguments = {"-i", video, "-vf", legenda, nomeFinal};
 
+        qDebug() << legenda;
         qDebug() << arguments;
 
         processo->setProcessChannelMode(QProcess::MergedChannels);
@@ -105,8 +103,8 @@ void MainWindow::on_btnRender_clicked()
 
 void MainWindow::on_btnSaida_clicked()
 {
-    QString filename = QFileDialog::getSaveFileName(this, "Salvar", QDir::homePath(), "Arquivo de vídeo (.mp4)");
-    QFile file(filename);
+    const QString filename = QFileDialog::getSaveFileName(this, "Salvar", QDir::homePath(), "Arquivo de vídeo (.mp4)");
+    const QFile file(filename);
     localfilename = filename;
 
     ui->lineSaida->clear();

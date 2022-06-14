@@ -57,41 +57,41 @@ void MainWindow::on_btnRender_clicked()
     QString legenda = ui->lineLeg->text();
     QString nomeFinal = ui->lineSaida->text();
 
-    if (video != "" && legenda != "")  {
-
-        if (QString::compare("file://", video.left(6))) {
-            video.remove("file://");
-        }
-
-        if (QString::compare("file://", video.left(6))) {
-            legenda.remove("file://");
-        }
-
-        if (nomeFinal.isEmpty()) {
-            nomeFinal = video;
-            nomeFinal.insert(nomeFinal.lastIndexOf('/') + 1, "FINALIZADO_");
-        }
-
-        if (legenda.right(4) == ".srt") {
-            legenda.insert(0, "subtitles=");
-        } else if (legenda.right(4) == ".ass") {
-            legenda.insert(0, "ass=");
-        } else {
-            QMessageBox::warning(this, "Aviso", "Formato de legenda não suportado!");
-            return;
-        }
-
-        const QString programa = "ffmpeg";
-        const QStringList arguments = {"-i", video, "-vf", legenda, nomeFinal};
-
-        qDebug() << legenda;
-        qDebug() << arguments;
-
-        processo->setProcessChannelMode(QProcess::MergedChannels);
-        processo->start(programa, arguments);
-    } else {
+    if (video != " " && legenda != " ")  {
         QMessageBox::warning(this, "Aviso", "Preencha todos os dados!");
+        return;
     }
+
+    if (QString::compare("file://", video.left(6))) {
+        video.remove("file://");
+    }
+
+    if (QString::compare("file://", video.left(6))) {
+        legenda.remove("file://");
+    }
+
+    if (nomeFinal.isEmpty()) {
+        nomeFinal = video;
+        nomeFinal.insert(nomeFinal.lastIndexOf('/') + 1, "FINALIZADO_");
+    }
+
+    if (legenda.right(4) == ".srt") {
+        legenda.insert(0, "subtitles=");
+    } else if (legenda.right(4) == ".ass") {
+        legenda.insert(0, "ass=");
+    } else {
+        QMessageBox::warning(this, "Aviso", "Formato de legenda não suportado!");
+        return;
+    }
+
+    const QString programa = "ffmpeg";
+    const QStringList arguments = {"-i", video, "-vf", legenda, nomeFinal};
+
+    qDebug() << legenda;
+    qDebug() << arguments;
+
+    processo->setProcessChannelMode(QProcess::MergedChannels);
+    processo->start(programa, arguments);
 
 }
 

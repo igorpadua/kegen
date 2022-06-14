@@ -15,11 +15,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(processo, SIGNAL(finished(int)), this, SLOT(encodingFinished()));
 }
 
-MainWindow::~MainWindow()
-{
-    delete ui;
-}
-
 void MainWindow::processStarted() {
     qDebug() << "processStarted()";
 }

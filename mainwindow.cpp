@@ -107,8 +107,7 @@ void MainWindow::on_btnSaida_clicked()
 }
 
 void MainWindow::on_btnCancelar_clicked()
-{
-
+{   
     processo->kill();
 
     QString nomeFinal = ui->lineSaida->text();
@@ -123,8 +122,9 @@ void MainWindow::on_btnCancelar_clicked()
         nomeFinal = video;
         nomeFinal.insert(nomeFinal.lastIndexOf('/') + 1, "FINALIZADO_");
     }
-    QString remover = "rm \"" + nomeFinal + "\"";
-    system(qPrintable(remover));
+
+    QFile::remove(nomeFinal);
+
     ui->textBrowser->setText("Cancelado com sucesso!");
 }
 

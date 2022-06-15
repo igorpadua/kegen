@@ -30,16 +30,21 @@ private slots:
 
     void on_btnCancelar_clicked();
 
+    void readyReadStandardOutput();
+
     void processStarted();
 
-    void readyReadStandardOutput();
+    void encodingFinished();
+
 
 private:
     Ui::MainWindow *ui;
     QString localfilename;
     QString filename;
     QFile file;
-    QProcess *processo;
+    QProcess processo;
     QString mOutputString;
+
+    QString nomeFinal();
 };
 #endif // MAINWINDOW_H

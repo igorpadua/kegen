@@ -7,12 +7,9 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    // Criando o processo
-    processo = new QProcess(this);
-
-    connect(processo, SIGNAL(started()), this, SLOT(processStarted()));
-    connect(processo, SIGNAL(readyReadStandardOutput()), this, SLOT(readyReadStandardOutput()));
-    connect(processo, SIGNAL(finished(int)), this, SLOT(encodingFinished()));
+    connect(&processo, &QProcess::started, this, &MainWindow::processStarted);
+    connect(&processo, &QProcess::readyReadStandardOutput, this, &MainWindow::readyReadStandardOutput);
+    connect(&processo, &QProcess::readChannelFinished, this, &MainWindow::encodingFinished);
 }
 
 void MainWindow::processStarted() {
@@ -22,7 +19,7 @@ void MainWindow::processStarted() {
 void MainWindow::readyReadStandardOutput()
 {
     qDebug() << "readyReadStandardOutput()";
-    mOutputString.append(processo->readAllStandardOutput());
+    mOutputString.append(processo.readAllStandardOutput());
     ui->textBrowser->setText(mOutputString);
 
     QTextCursor textCursor = ui->textBrowser->textCursor();
@@ -30,11 +27,29 @@ void MainWindow::readyReadStandardOutput()
     ui->textBrowser->setTextCursor(textCursor);
 }
 
+void MainWindow::encodingFinished() {
+    qDebug() << "encodingFinished()";
+}
+
+QString MainWindow::nomeFinal() {
+
+    QString arquivoSaida = ui->lineVideo->text();
+
+    if (QString::compare("file://", arquivoSaida.left(6))) {
+        arquivoSaida.remove("file://");
+    }
+
+    arquivoSaida.insert(arquivoSaida.lastIndexOf('/') + 1, "FINALIZADO_");
+
+    return arquivoSaida;
+}
+
 void MainWindow::on_btnVideo_clicked()
 {   
-    filename = QFileDialog::getOpenFileName(this, "Abrir", QDir::homePath(), "Arquivos de vídeo (.mp4)");
+    filename = QFileDialog::getOpenFileName(this, tr("Abrir arquivo"), QDir::homePath(), tr("Arquivos de vídeo (*.mp4 *.mkv)"));
     file.setFileName(filename);
     localfilename = filename;
+
     ui->lineVideo->clear();
     ui->lineVideo->insert(filename);
 }
@@ -42,7 +57,7 @@ void MainWindow::on_btnVideo_clicked()
 
 void MainWindow::on_btnLeg_clicked()
 {
-    filename = QFileDialog::getOpenFileName(this, "Abrir", QDir::homePath(), "Arquivos de legenda (.ass)");
+    filename = QFileDialog::getOpenFileName(this, tr("Abrir arquivo"), QDir::homePath(), tr("Arquivos de legenda (*.ass *.srt)"));
     file.setFileName(filename);
     localfilename = filename;
 
@@ -50,14 +65,23 @@ void MainWindow::on_btnLeg_clicked()
     ui->lineLeg->insert(filename);
 }
 
+void MainWindow::on_btnSaida_clicked()
+{
+    filename = QFileDialog::getSaveFileName(this, tr("Salvar arquivo"), QDir::homePath(), tr("*.mp4(*.mp4)"));
+    file.setFileName(filename);
+    localfilename = filename;
+
+    ui->lineSaida->clear();
+    ui->lineSaida->insert(filename);
+}
 
 void MainWindow::on_btnRender_clicked()
 {
     QString video = ui->lineVideo->text();
     QString legenda = ui->lineLeg->text();
-    QString nomeFinal = ui->lineSaida->text();
+    QString arquivoSaida = ui->lineSaida->text();
 
-    if (video != " " && legenda != " ")  {
+    if (video == "" && legenda == "")  {
         QMessageBox::warning(this, "Aviso", "Preencha todos os dados!");
         return;
     }
@@ -70,9 +94,8 @@ void MainWindow::on_btnRender_clicked()
         legenda.remove("file://");
     }
 
-    if (nomeFinal.isEmpty()) {
-        nomeFinal = video;
-        nomeFinal.insert(nomeFinal.lastIndexOf('/') + 1, "FINALIZADO_");
+    if (arquivoSaida.isEmpty()) {
+        arquivoSaida = nomeFinal();
     }
 
     if (legenda.right(4) == ".srt") {
@@ -85,45 +108,28 @@ void MainWindow::on_btnRender_clicked()
     }
 
     const QString programa = "ffmpeg";
-    const QStringList arguments = {"-i", video, "-vf", legenda, nomeFinal};
+    const QStringList arguments = {"-i", video, "-vf", legenda, arquivoSaida};
 
     qDebug() << legenda;
     qDebug() << arguments;
 
-    processo->setProcessChannelMode(QProcess::MergedChannels);
-    processo->start(programa, arguments);
+    processo.setProcessChannelMode(QProcess::MergedChannels);
+    processo.start(programa, arguments);
 
 }
 
-
-void MainWindow::on_btnSaida_clicked()
-{
-    const QString filename = QFileDialog::getSaveFileName(this, "Salvar", QDir::homePath(), "Arquivo de vídeo (.mp4)");
-    const QFile file(filename);
-    localfilename = filename;
-
-    ui->lineSaida->clear();
-    ui->lineSaida->insert(filename);
-}
 
 void MainWindow::on_btnCancelar_clicked()
 {   
-    processo->kill();
+    processo.kill();
 
-    QString nomeFinal = ui->lineSaida->text();
+    QString arquivoSaida = ui->lineSaida->text();
 
-    if (nomeFinal.isEmpty()) {
-        QString video = ui->lineVideo->text();
-
-        if (QString::compare("file://", video.left(6))) {
-            video.remove("file://");
-        }
-
-        nomeFinal = video;
-        nomeFinal.insert(nomeFinal.lastIndexOf('/') + 1, "FINALIZADO_");
+    if (arquivoSaida.isEmpty()) {
+        arquivoSaida = nomeFinal();
     }
 
-    QFile::remove(nomeFinal);
+    QFile::remove(arquivoSaida);
 
     ui->textBrowser->setText("Cancelado com sucesso!");
 }

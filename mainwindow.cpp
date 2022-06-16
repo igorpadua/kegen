@@ -10,6 +10,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&processo, &QProcess::started, this, &MainWindow::processStarted);
     connect(&processo, &QProcess::readyReadStandardOutput, this, &MainWindow::readyReadStandardOutput);
     connect(&processo, &QProcess::readChannelFinished, this, &MainWindow::encodingFinished);
+
+    connect(ui->btnVideo, &QPushButton::clicked, this, &MainWindow::btnVideoClicked);
+    connect(ui->btnLeg, &QPushButton::clicked, this, &MainWindow::btnLegClicked);
+    connect(ui->btnSaida, &QPushButton::clicked, this, &MainWindow::btnSaidaClicked);
+    connect(ui->btnRender, &QPushButton::clicked, this, &MainWindow::btnRenderClicked);
+    connect(ui->btnCancelar, &QPushButton::clicked, this, &MainWindow::btnCancelarClicked);
 }
 
 void MainWindow::processStarted() {
@@ -44,7 +50,7 @@ QString MainWindow::nomeFinal() {
     return arquivoSaida;
 }
 
-void MainWindow::on_btnVideo_clicked()
+void MainWindow::btnVideoClicked()
 {   
     filename = QFileDialog::getOpenFileName(this, tr("Abrir arquivo"), QDir::homePath(), tr("Arquivos de vídeo (*.mp4 *.mkv)"));
     file.setFileName(filename);
@@ -55,7 +61,7 @@ void MainWindow::on_btnVideo_clicked()
 }
 
 
-void MainWindow::on_btnLeg_clicked()
+void MainWindow::btnLegClicked()
 {
     filename = QFileDialog::getOpenFileName(this, tr("Abrir arquivo"), QDir::homePath(), tr("Arquivos de legenda (*.ass *.srt)"));
     file.setFileName(filename);
@@ -65,7 +71,7 @@ void MainWindow::on_btnLeg_clicked()
     ui->lineLeg->insert(filename);
 }
 
-void MainWindow::on_btnSaida_clicked()
+void MainWindow::btnSaidaClicked()
 {
     filename = QFileDialog::getSaveFileName(this, tr("Salvar arquivo"), QDir::homePath(), tr("*.mp4(*.mp4)"));
     file.setFileName(filename);
@@ -75,7 +81,7 @@ void MainWindow::on_btnSaida_clicked()
     ui->lineSaida->insert(filename);
 }
 
-void MainWindow::on_btnRender_clicked()
+void MainWindow::btnRenderClicked()
 {
     QString video = ui->lineVideo->text();
     QString legenda = ui->lineLeg->text();
@@ -118,8 +124,7 @@ void MainWindow::on_btnRender_clicked()
 
 }
 
-
-void MainWindow::on_btnCancelar_clicked()
+void MainWindow::btnCancelarClicked()
 {   
     processo.kill();
 
@@ -129,8 +134,13 @@ void MainWindow::on_btnCancelar_clicked()
         arquivoSaida = nomeFinal();
     }
 
+    ui->textBrowser->setText("Cancelado com sucesso!");
+
+    if (!QFile::exists(arquivoSaida)) {
+            return;
+    }
+
     QFile::remove(arquivoSaida);
 
-    ui->textBrowser->setText("Cancelado com sucesso!");
 }
 

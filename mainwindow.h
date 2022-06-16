@@ -20,15 +20,15 @@ public:
     MainWindow(QWidget *parent = nullptr);
 
 private slots:
-    void on_btnVideo_clicked();
+    void btnVideoClicked();
 
-    void on_btnLeg_clicked();
+    void btnLegClicked();
 
-    void on_btnRender_clicked();
+    void btnRenderClicked();
 
-    void on_btnSaida_clicked();
+    void btnSaidaClicked();
 
-    void on_btnCancelar_clicked();
+    void btnCancelarClicked();
 
     void readyReadStandardOutput();
 

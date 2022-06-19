@@ -136,11 +136,8 @@ void MainWindow::btnCancelarClicked()
 
     ui->textBrowser->setText("Cancelado com sucesso!");
 
-    if (!QFile::exists(arquivoSaida)) {
-            return;
+    if (QFile::exists(arquivoSaida)) {
+            QFile::remove(arquivoSaida);
     }
-
-    QFile::remove(arquivoSaida);
-
 }
 
